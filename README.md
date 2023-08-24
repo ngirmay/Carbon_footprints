@@ -3,7 +3,7 @@
 Project: Direct Air Capture Data Analytics Platform
 
 Objective:
-To create an R Shiny app that provides a comprehensive view of various Direct Air Capture projects around the globe. The app will include features to visualize real-time and historical data, machine learning models for predictive analytics, and data pre-processing capabilities.
+To create an R Shiny app that provides a comprehensive view of various Direct Air Capture projects around the U.S. The app will include features to visualize real-time and historical data, machine learning models for predictive analytics, and data pre-processing capabilities.
 
 Key Features:
 - Interactive Dashboard
