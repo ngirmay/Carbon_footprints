@@ -33,7 +33,8 @@ Data Requirements:
 - Geospatial data for DAC installations.
 - Time-series data for CO2 captured, energy used, and other relevant metrics.
 - Additional environmental parameters (e.g., air temperature, humidity).
-- Technology Stack:
+
+Technology Stack:
 - R Shiny for the main application.
 - R for data preprocessing and analytics.
 - leaflet for map visualizations.
