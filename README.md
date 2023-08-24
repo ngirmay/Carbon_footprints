@@ -41,10 +41,10 @@ Data Requirements:
 - Python for machine learning models (if needed).
 
 Milestones:
-Week 1: Data collection and initial exploration.
-Week 2-3: Develop data preprocessing and analytics modules.
-Week 4: Build initial Shiny app with basic features (dashboard and geospatial analysis).
-Week 5: Implement time-series analysis and predictive models.
-Week 6: Add collaboration tools and user input features.
-Week 7: Debugging, testing, and user feedback.
-Week 8: Final refinements and deployment.
+- Week 1: Data collection and initial exploration.
+- Week 2-3: Develop data preprocessing and analytics modules.
+- Week 4: Build initial Shiny app with basic features (dashboard and geospatial analysis).
+- Week 5: Implement time-series analysis and predictive models.
+- Week 6: Add collaboration tools and user input features.
+- Week 7: Debugging, testing, and user feedback.
+- Week 8: Final refinements and deployment.
