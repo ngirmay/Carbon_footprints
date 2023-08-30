@@ -1,0 +1,5 @@
+1. Find coordniates of all DAC plants in the U.S. (tabular) 
+2. cllect weather (can be real time) /geographical (Hydrography, Elevation, land area) information of area where all DAC plants reside 
+3. Collect information on Policies and Investments that are Supporting DAC Development - sort relavance by state (color code states/locations that show highest potential impact)
+4. collect CO2 emmssions by state - color code areas with highest 
+5. Create ML model to take weather data and predicit best location for future DAC plants
