@@ -1,0 +1,159 @@
+---
+title: "DAC Analytics Dashboard: Code Review and Future Plans"
+author: "Analytics Team"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float: true
+    code_folding: show
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 6
+)
+
+# Load required packages
+library(tidyverse)
+library(plotly)
+library(knitr)
+library(kableExtra)
+library(leaflet)
+library(lubridate)
+```
+
+## Current Implementation Overview
+
+The current implementation is a Shiny dashboard that monitors Direct Air Capture (DAC) installations worldwide. 
+
+### Key Features
+* **Data Management**: Tracks 5 DAC installations with simulated operational data
+* **Visualization Components**:
+  - Interactive global installation map
+  - Real-time CO₂ capture metrics
+  - Performance comparisons across facilities
+  - Environmental impact analysis
+  - Cost efficiency tracking
+
+```{r installations-data}
+# Create DAC installations data
+dac_installations <- data.frame(
+    name = c("Orca", "Mammoth", "Project Bison", "Squamish", "Arizona DAC"),
+    company = c("Climeworks", "Climeworks", "CarbonCapture", "Carbon Engineering", "Carbon Capture Inc"),
+    type = c("Commercial", "Commercial", "Commercial", "Pilot", "Research"),
+    latitude = c(64.0297, 64.0297, 41.8240, 49.7016, 33.4484),
+    longitude = c(-21.9877, -21.9877, -107.9511, -123.1558, -112.0740),
+    capacity = c(4000, 36000, 5000, 1000, 3500),
+    start_date = as.Date(c("2021-09-01", "2024-01-15", "2023-12-01", "2015-06-01", "2022-03-01")),
+    technology = c("Solid Sorbent", "Solid Sorbent", "Solid Sorbent", "Liquid Solvent", "Membrane"),
+    stringsAsFactors = FALSE
+)
+
+# Display current installations
+dac_installations %>%
+  select(name, technology, capacity) %>%
+  arrange(desc(capacity)) %>%
+  mutate(
+    capacity = paste0(format(capacity, big.mark=","), " tons/year")
+  ) %>%
+  kable(col.names = c("Facility", "Technology Type", "Annual Capacity")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+### Current Limitations
+1. Data Generation: Relies on simulated data
+2. Static Installation Data: Fixed set of 5 DAC installations
+3. Limited Error Handling
+4. Basic Authentication
+5. Limited Data Export
+
+```{r operational-data}
+# Generate operational data function
+generate_operational_data <- function(installations, days = 365) {
+    dates <- seq(Sys.Date() - days, Sys.Date(), by = "day")
+    operational_data <- expand.grid(
+        installation_name = installations$name,
+        date = dates,
+        stringsAsFactors = FALSE
+    ) %>%
+    left_join(installations[, c("name", "capacity", "start_date")], 
+              by = c("installation_name" = "name")) %>%
+    filter(date >= start_date) %>%
+    group_by(installation_name) %>%
+    mutate(
+        efficiency_factor = 0.8 + 0.15 * sin(2 * pi * as.numeric(format(date, "%j")) / 365),
+        daily_capacity = capacity / 365,
+        co2_captured = daily_capacity * efficiency_factor * (1 + rnorm(n(), 0, 0.05)),
+        energy_used = co2_captured * (2.0 + rnorm(n(), 0, 0.2)),
+        operating_cost = co2_captured * (400 + rnorm(n(), 0, 50)),
+        temperature = 15 + 10 * sin(2 * pi * as.numeric(format(date, "%j")) / 365) + rnorm(n(), 0, 2),
+        humidity = pmin(pmax(60 + rnorm(n(), 0, 10), 0), 100)
+    ) %>%
+    ungroup() %>%
+    select(-efficiency_factor, -daily_capacity)
+    
+    return(operational_data)
+}
+
+# Generate the data
+operational_data <- generate_operational_data(dac_installations)
+```
+
+## Performance Analysis
+
+```{r performance-plot}
+# Temperature vs Efficiency Plot
+plot_ly(operational_data, 
+        x = ~temperature, 
+        y = ~co2_captured/energy_used * 100,
+        type = "scatter",
+        mode = "markers",
+        marker = list(
+          color = "#4CAF50",
+          size = 8,
+          opacity = 0.6
+        )) %>%
+  add_lines(x = ~temperature, 
+           y = ~fitted(loess(co2_captured/energy_used * 100 ~ temperature)),
+           line = list(color = "#1B5E20")) %>%
+  layout(
+    title = "Temperature Effects on System Efficiency",
+    xaxis = list(title = "Temperature (°C)"),
+    yaxis = list(title = "Efficiency (%)")
+  )
+```
+
+## Future Projections
+
+```{r projections}
+future_projections <- data.frame(
+  Year = 2024:2030,
+  Expected_Capacity = c(5000, 15000, 45000, 100000, 200000, 350000, 500000),
+  Optimistic_Capacity = c(5000, 20000, 60000, 150000, 300000, 500000, 750000),
+  Conservative_Capacity = c(5000, 12000, 30000, 70000, 150000, 250000, 350000)
+)
+
+plot_ly(future_projections, x = ~Year) %>%
+  add_lines(y = ~Expected_Capacity, name = "Expected", line = list(color = "#4CAF50")) %>%
+  add_lines(y = ~Optimistic_Capacity, name = "Optimistic", line = list(color = "#8BC34A")) %>%
+  add_lines(y = ~Conservative_Capacity, name = "Conservative", line = list(color = "#1B5E20")) %>%
+  layout(
+    title = "Projected Annual Capture Capacity",
+    yaxis = list(title = "Annual Capacity (tons)")
+  )
+```
+
+## Conclusion
+
+The current implementation provides a solid foundation for DAC installation monitoring. Key areas for improvement include:
+- Data management and reliability
+- User experience and customization
+- Advanced analytics and predictions
+- System scalability and security
