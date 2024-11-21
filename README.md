@@ -1,9 +1,11 @@
 # Carbon_footprints
 
-Project: Direct Air Capture Data Analytics Platform
+Project: Template Direct Air Capture Data Analytics Platform
 
 Objective:
-To create an R Shiny app that provides a comprehensive view of various Direct Air Capture projects around the U.S. The app will include features to visualize real-time and historical data, machine learning models for predictive analytics, and data pre-processing capabilities.
+To create an R Shiny app that provides a comprehensive view of various Direct Air Capture projects around the U.S. 
+
+App will include features to visualize real-time and historical data, predictive analytics, and data pre-processing capabilities - hoping to create a skeleton and return to this with larger datasets
 
 Key Features:
 - Interactive Dashboard
@@ -39,13 +41,4 @@ Technology Stack:
 - R for data preprocessing and analytics.
 - leaflet for map visualizations.
 - ggplot2 and plotly for other visualizations.
-- Python for machine learning models (if needed).
 
-Milestones:
-- Week 1: Data collection and initial exploration.
-- Week 2-3: Develop data preprocessing and analytics modules.
-- Week 4: Build initial Shiny app with basic features (dashboard and geospatial analysis).
-- Week 5: Implement time-series analysis and predictive models.
-- Week 6: Add collaboration tools and user input features.
-- Week 7: Debugging, testing, and user feedback.
-- Week 8: Final refinements and deployment.
