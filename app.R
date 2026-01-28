@@ -49,42 +49,57 @@ custom_css <- HTML("
   }
 ")
 
-# Real DAC installations data (updated January 2025)
-dac_installations <- data.frame(
-  name = c(
-    "Orca", "Mammoth", "Project Bison", "Squamish", "Arizona DAC",
-    "Stratos", "Heirloom Tracy", "1PointFive Kingfisher"
-  ),
-  company = c(
-    "Climeworks", "Climeworks", "CarbonCapture", "Carbon Engineering", "Carbon Capture Inc",
-    "Occidental/1PointFive", "Heirloom Carbon", "1PointFive"
-  ),
-  type = c(
-    "Commercial", "Commercial", "Commercial", "Pilot", "Research",
-    "Commercial", "Commercial", "Commercial"
-  ),
-  latitude = c(
-    64.0297, 64.0297, 41.8240, 49.7016, 33.4484,
-    31.8834, 37.7397, 31.7619
-  ),
-  longitude = c(
-    -21.9877, -21.9877, -107.9511, -123.1558, -112.0740,
-    -102.3678, -121.4252, -102.4894
-  ),
-  capacity = c(
-    4000, 36000, 5000, 1000, 3500,
-    500000, 1000, 500000
-  ),
-  start_date = as.Date(c(
-    "2021-09-01", "2024-01-15", "2023-12-01", "2015-06-01", "2022-03-01",
-    "2025-06-01", "2023-11-01", "2025-12-01"
-  )),
-  technology = c(
-    "Solid Sorbent", "Solid Sorbent", "Solid Sorbent", "Liquid Solvent", "Membrane",
-    "Liquid Solvent", "Mineral Carbonation", "Liquid Solvent"
-  ),
-  stringsAsFactors = FALSE
-)
+# Load real DAC facilities data from CSV (sources: IEA, DOE, company announcements)
+# Data compiled from:
+# - IEA CCUS Projects Database
+# - DOE Regional DAC Hubs Program
+# - AlliedOffsets Global DAC Tracking
+# - Company press releases (Climeworks, 1PointFive, Heirloom, etc.)
+
+dac_facilities_file <- "data/dac_facilities.csv"
+
+if (file.exists(dac_facilities_file)) {
+  dac_installations <- read.csv(dac_facilities_file, stringsAsFactors = FALSE) %>%
+    mutate(
+      start_date = as.Date(start_date),
+      capacity = capacity_tonnes_yr
+    ) %>%
+    rename(
+      type = status,
+      name = name
+    )
+} else {
+  # Fallback to embedded data if CSV not found
+  dac_installations <- data.frame(
+    name = c(
+      "Orca", "Mammoth", "Project Cypress", "Stratos", "Heirloom Tracy",
+      "Project Bison Phase I", "Squamish Pilot", "Deep Sky Alpha"
+    ),
+    company = c(
+      "Climeworks", "Climeworks", "Climeworks/Heirloom/Battelle", "1PointFive/Carbon Engineering",
+      "Heirloom", "CarbonCapture Inc", "Carbon Engineering", "Deep Sky"
+    ),
+    country = c("Iceland", "Iceland", "USA", "USA", "USA", "USA", "Canada", "Canada"),
+    region = c("Europe", "Europe", "Louisiana", "Texas", "California", "Wyoming", "British Columbia", "Alberta"),
+    type = c(
+      "Operational", "Operational", "Planned", "Under Construction", "Operational",
+      "Operational", "Operational", "Under Construction"
+    ),
+    latitude = c(64.0392, 64.0392, 30.2241, 31.8457, 37.7397, 41.1400, 49.7016, 53.5461),
+    longitude = c(-21.4011, -21.4011, -93.2174, -102.3676, -121.4252, -104.8202, -123.1558, -113.4938),
+    capacity = c(4000, 36000, 1000000, 500000, 1000, 10000, 1000, 30000),
+    start_date = as.Date(c(
+      "2021-09-08", "2024-05-08", "2026-01-01", "2025-06-01", "2023-11-09",
+      "2024-01-15", "2015-06-01", "2025-03-01"
+    )),
+    technology = c(
+      "Solid Sorbent (Low-temp)", "Solid Sorbent (Low-temp)", "Hybrid (Solid + Limestone)",
+      "Liquid Solvent (High-temp)", "Limestone Mineralization", "Solid Sorbent",
+      "Liquid Solvent", "Multi-technology"
+    ),
+    stringsAsFactors = FALSE
+  )
+}
 
 # Generate operational data
 generate_operational_data <- function(installations, days = 365) {
@@ -125,6 +140,7 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Overview", tabName = "dashboard", icon = icon("dashboard")),
       menuItem("Installation Map", tabName = "map", icon = icon("map")),
+      menuItem("Facilities Database", tabName = "database", icon = icon("database")),
       menuItem("Performance", tabName = "performance", icon = icon("chart-line")),
       menuItem("Environmental", tabName = "environmental", icon = icon("leaf"))
     )
@@ -177,6 +193,38 @@ ui <- dashboardPage(
                   title = "Global DAC Installations",
                   leafletOutput("dac_map", height = 600),
                   width = 12,
+                  status = "success"
+                )
+              )
+      ),
+
+      # Facilities Database
+      tabItem(tabName = "database",
+              fluidRow(
+                valueBoxOutput("total_capacity_box", width = 3),
+                valueBoxOutput("operational_count_box", width = 3),
+                valueBoxOutput("planned_capacity_box", width = 3),
+                valueBoxOutput("countries_count_box", width = 3)
+              ),
+              fluidRow(
+                box(
+                  title = "Global DAC Facilities Database (Sources: IEA, DOE, Company Reports)",
+                  DTOutput("facilities_table"),
+                  width = 12,
+                  status = "success"
+                )
+              ),
+              fluidRow(
+                box(
+                  title = "Capacity by Status",
+                  plotlyOutput("capacity_by_status"),
+                  width = 6,
+                  status = "success"
+                ),
+                box(
+                  title = "Capacity by Region",
+                  plotlyOutput("capacity_by_region"),
+                  width = 6,
                   status = "success"
                 )
               )
@@ -355,8 +403,14 @@ server <- function(input, output, session) {
       )
   })
   
-  # Map
+  # Map with color by status
   output$dac_map <- renderLeaflet({
+    # Color palette by status
+    status_colors <- colorFactor(
+      palette = c("#4CAF50", "#FFC107", "#2196F3"),
+      domain = c("Operational", "Under Construction", "Planned")
+    )
+
     leaflet(dac_installations) %>%
       addTiles() %>%
       addCircleMarkers(
@@ -364,13 +418,138 @@ server <- function(input, output, session) {
         popup = ~paste(
           "<b>", name, "</b><br>",
           "Company:", company, "<br>",
-          "Type:", type, "<br>",
-          "Capacity:", capacity, "tons/year<br>",
-          "Technology:", technology
+          "Status:", type, "<br>",
+          "Capacity:", format(capacity, big.mark = ","), "tonnes/year<br>",
+          "Technology:", technology, "<br>",
+          "Region:", ifelse(exists("region"), region, "N/A")
         ),
-        radius = ~sqrt(capacity/100),
-        color = "#4CAF50",
+        radius = ~pmin(sqrt(capacity/500), 25),
+        color = ~status_colors(type),
         fillOpacity = 0.7
+      ) %>%
+      addLegend(
+        position = "bottomright",
+        colors = c("#4CAF50", "#FFC107", "#2196F3"),
+        labels = c("Operational", "Under Construction", "Planned"),
+        title = "Status"
+      )
+  })
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # DATABASE TAB - Facilities table and summary stats
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  output$total_capacity_box <- renderValueBox({
+    total <- sum(dac_installations$capacity, na.rm = TRUE)
+    valueBox(
+      paste0(format(round(total/1000), big.mark = ","), " kt/yr"),
+      "Total Announced Capacity",
+      icon = icon("industry"),
+      color = "green"
+    )
+  })
+
+  output$operational_count_box <- renderValueBox({
+    operational <- sum(dac_installations$type == "Operational", na.rm = TRUE)
+    valueBox(
+      operational,
+      "Operational Facilities",
+      icon = icon("check-circle"),
+      color = "green"
+    )
+  })
+
+  output$planned_capacity_box <- renderValueBox({
+    planned <- sum(dac_installations$capacity[dac_installations$type %in% c("Planned", "Under Construction")], na.rm = TRUE)
+    valueBox(
+      paste0(format(round(planned/1000), big.mark = ","), " kt/yr"),
+      "Pipeline Capacity",
+      icon = icon("clock"),
+      color = "yellow"
+    )
+  })
+
+  output$countries_count_box <- renderValueBox({
+    countries <- length(unique(dac_installations$country))
+    valueBox(
+      countries,
+      "Countries",
+      icon = icon("globe"),
+      color = "blue"
+    )
+  })
+
+  output$facilities_table <- renderDT({
+    display_data <- dac_installations %>%
+      select(name, company, country, region, type, capacity, technology, start_date) %>%
+      mutate(
+        capacity = format(capacity, big.mark = ","),
+        start_date = format(start_date, "%Y-%m")
+      ) %>%
+      rename(
+        "Facility" = name,
+        "Company" = company,
+        "Country" = country,
+        "Region" = region,
+        "Status" = type,
+        "Capacity (t/yr)" = capacity,
+        "Technology" = technology,
+        "Start Date" = start_date
+      )
+
+    datatable(
+      display_data,
+      options = list(
+        pageLength = 15,
+        searchHighlight = TRUE,
+        order = list(list(4, 'asc'))  # Sort by status
+      ),
+      filter = 'top',
+      rownames = FALSE
+    )
+  })
+
+  output$capacity_by_status <- renderPlotly({
+    status_data <- dac_installations %>%
+      group_by(type) %>%
+      summarize(
+        total_capacity = sum(capacity, na.rm = TRUE) / 1000,
+        count = n()
+      ) %>%
+      mutate(type = factor(type, levels = c("Operational", "Under Construction", "Planned")))
+
+    plot_ly(status_data, x = ~type, y = ~total_capacity,
+            type = 'bar',
+            text = ~paste(count, "facilities"),
+            marker = list(color = c('#4CAF50', '#FFC107', '#2196F3'))) %>%
+      layout(
+        title = "Capacity by Development Status",
+        xaxis = list(title = "Status"),
+        yaxis = list(title = "Capacity (kt CO₂/year)"),
+        plot_bgcolor = '#f8f9fa',
+        paper_bgcolor = '#f8f9fa'
+      )
+  })
+
+  output$capacity_by_region <- renderPlotly({
+    region_data <- dac_installations %>%
+      group_by(country) %>%
+      summarize(
+        total_capacity = sum(capacity, na.rm = TRUE) / 1000,
+        count = n()
+      ) %>%
+      arrange(desc(total_capacity))
+
+    plot_ly(region_data, x = ~reorder(country, total_capacity), y = ~total_capacity,
+            type = 'bar',
+            text = ~paste(count, "facilities"),
+            marker = list(color = '#8BC34A')) %>%
+      layout(
+        title = "Capacity by Country",
+        xaxis = list(title = "Country"),
+        yaxis = list(title = "Capacity (kt CO₂/year)"),
+        plot_bgcolor = '#f8f9fa',
+        paper_bgcolor = '#f8f9fa'
       )
   })
   
