@@ -1,0 +1,22 @@
+# R artifacts
+.Rhistory
+.Rdata
+.RData
+.Ruserdata
+*.Rproj.user
+
+# Shiny
+rsconnect/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.Rproj
+
+# Rendered files
+*.html
+!dac_analysis_report.html

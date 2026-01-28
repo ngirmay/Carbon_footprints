@@ -49,16 +49,40 @@ custom_css <- HTML("
   }
 ")
 
-# Real DAC installations data
+# Real DAC installations data (updated January 2025)
 dac_installations <- data.frame(
-  name = c("Orca", "Mammoth", "Project Bison", "Squamish", "Arizona DAC"),
-  company = c("Climeworks", "Climeworks", "CarbonCapture", "Carbon Engineering", "Carbon Capture Inc"),
-  type = c("Commercial", "Commercial", "Commercial", "Pilot", "Research"),
-  latitude = c(64.0297, 64.0297, 41.8240, 49.7016, 33.4484),
-  longitude = c(-21.9877, -21.9877, -107.9511, -123.1558, -112.0740),
-  capacity = c(4000, 36000, 5000, 1000, 3500),
-  start_date = as.Date(c("2021-09-01", "2024-01-15", "2023-12-01", "2015-06-01", "2022-03-01")),
-  technology = c("Solid Sorbent", "Solid Sorbent", "Solid Sorbent", "Liquid Solvent", "Membrane"),
+  name = c(
+    "Orca", "Mammoth", "Project Bison", "Squamish", "Arizona DAC",
+    "Stratos", "Heirloom Tracy", "1PointFive Kingfisher"
+  ),
+  company = c(
+    "Climeworks", "Climeworks", "CarbonCapture", "Carbon Engineering", "Carbon Capture Inc",
+    "Occidental/1PointFive", "Heirloom Carbon", "1PointFive"
+  ),
+  type = c(
+    "Commercial", "Commercial", "Commercial", "Pilot", "Research",
+    "Commercial", "Commercial", "Commercial"
+  ),
+  latitude = c(
+    64.0297, 64.0297, 41.8240, 49.7016, 33.4484,
+    31.8834, 37.7397, 31.7619
+  ),
+  longitude = c(
+    -21.9877, -21.9877, -107.9511, -123.1558, -112.0740,
+    -102.3678, -121.4252, -102.4894
+  ),
+  capacity = c(
+    4000, 36000, 5000, 1000, 3500,
+    500000, 1000, 500000
+  ),
+  start_date = as.Date(c(
+    "2021-09-01", "2024-01-15", "2023-12-01", "2015-06-01", "2022-03-01",
+    "2025-06-01", "2023-11-01", "2025-12-01"
+  )),
+  technology = c(
+    "Solid Sorbent", "Solid Sorbent", "Solid Sorbent", "Liquid Solvent", "Membrane",
+    "Liquid Solvent", "Mineral Carbonation", "Liquid Solvent"
+  ),
   stringsAsFactors = FALSE
 )
 

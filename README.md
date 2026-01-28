@@ -1,44 +1,45 @@
-# Carbon_footprints
+# Carbon Footprints — DAC Analytics Dashboard
 
-Project: Template Direct Air Capture Data Analytics Platform
+An R Shiny dashboard for visualizing Direct Air Capture (DAC) installations and their operational performance.
 
-Objective:
-To create an R Shiny app that provides a comprehensive view of various Direct Air Capture projects around the U.S. 
+## Features
 
-App will include features to visualize real-time and historical data, predictive analytics, and data pre-processing capabilities - hoping to create a skeleton and return to this with larger datasets
+- **Interactive Dashboard** — KPIs for total CO2 captured, efficiency, and costs
+- **Geospatial Map** — Leaflet map showing DAC installation locations worldwide
+- **Performance Analytics** — Time series analysis of capture rates by facility
+- **Environmental Correlations** — Temperature and humidity impact on efficiency
 
-Key Features:
-- Interactive Dashboard
+## Installations Tracked
 
-- A dynamic dashboard displaying key performance indicators (KPIs) such as total CO2 captured, energy efficiency, cost-effectiveness, and geographical coverage.
-Data Preprocessing Module
+| Facility | Company | Capacity (tons/year) | Technology |
+|----------|---------|---------------------|------------|
+| Orca | Climeworks | 4,000 | Solid Sorbent |
+| Mammoth | Climeworks | 36,000 | Solid Sorbent |
+| Stratos | Occidental/1PointFive | 500,000 | Liquid Solvent |
+| Project Bison | CarbonCapture | 5,000 | Solid Sorbent |
+| Heirloom Tracy | Heirloom Carbon | 1,000 | Mineral Carbonation |
 
-- Tools for cleaning, normalizing, and integrating DAC data from multiple sources.
-Geospatial Analysis
+## Quick Start
 
-- Interactive maps showing the locations of various DAC installations and their performance metrics.
-Time Series Analysis
+```r
+# Install dependencies
+install.packages("pacman")
 
-- Graphs showing the performance of DAC projects over time, with the ability to filter by various parameters.
-Predictive Modeling
+# Run the app
+shiny::runApp("app.R")
+```
 
-- Implement machine learning models to forecast the efficiency, costs, and potential impact of different DAC technologies.
-Collaboration Tool
+## Tech Stack
 
-- A feature to share insights or directly export graphs and data tables, fostering collaboration between carbon science, data science, and engineering teams.
-User Input and Customization
+- **R Shiny** + shinydashboard
+- **Leaflet** for maps
+- **Plotly** for interactive charts
+- **dplyr/tidyr** for data wrangling
 
-- Allow users to input their data for quick analytics and visualization.
+## Data Sources
 
-  
-Data Requirements:
-- Geospatial data for DAC installations.
-- Time-series data for CO2 captured, energy used, and other relevant metrics.
-- Additional environmental parameters (e.g., air temperature, humidity).
+See [data_sources.md](data_sources.md) for planned data integrations.
 
-Technology Stack:
-- R Shiny for the main application.
-- R for data preprocessing and analytics.
-- leaflet for map visualizations.
-- ggplot2 and plotly for other visualizations.
+## License
 
+MIT — See [LICENSE](LICENSE)
