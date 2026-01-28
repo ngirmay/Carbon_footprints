@@ -1,0 +1,24 @@
+name,company,country,region,latitude,longitude,capacity_tonnes_yr,status,technology,start_date,source
+Orca,Climeworks,Iceland,Europe,64.0392,-21.4011,4000,Operational,Solid Sorbent (Low-temp),2021-09-08,IEA
+Mammoth,Climeworks,Iceland,Europe,64.0392,-21.4011,36000,Operational,Solid Sorbent (Low-temp),2024-05-08,IEA
+Project Cypress,Climeworks/Heirloom/Battelle,USA,Louisiana,30.2241,-93.2174,1000000,Planned,Hybrid (Solid + Limestone),2026-01-01,DOE DAC Hub
+Stratos,1PointFive/Carbon Engineering,USA,Texas,31.8457,-102.3676,500000,Under Construction,Liquid Solvent (High-temp),2025-06-01,DOE DAC Hub
+South Texas DAC Hub,1PointFive,USA,Texas,27.8006,-97.3964,1000000,Planned,Liquid Solvent,2027-01-01,1PointFive
+Project Bison Phase I,CarbonCapture Inc,USA,Wyoming,41.1400,-104.8202,10000,Operational,Solid Sorbent,2024-01-15,CarbonCapture
+Project Bison Phase IV,CarbonCapture Inc,USA,Wyoming,41.1400,-104.8202,5000000,Planned,Solid Sorbent,2030-01-01,CarbonCapture
+Heirloom Tracy,Heirloom,USA,California,37.7397,-121.4252,1000,Operational,Limestone Mineralization,2023-11-09,Heirloom
+Heirloom Louisiana 1,Heirloom,USA,Louisiana,32.5252,-93.7502,160000,Under Construction,Limestone Mineralization,2026-01-01,Heirloom
+Heirloom Louisiana 2,Heirloom,USA,Louisiana,32.5252,-93.7502,160000,Planned,Limestone Mineralization,2027-01-01,Heirloom
+Squamish Pilot,Carbon Engineering,Canada,British Columbia,49.7016,-123.1558,1000,Operational,Liquid Solvent,2015-06-01,Carbon Engineering
+Project Bantam,Heimdal,Iceland,Europe,64.1466,-21.9426,7000,Operational,Electrochemical,2024-01-01,AlliedOffsets
+Alpha Test Site,Airhive,USA,Texas,32.7767,-96.7970,1000,Operational,Solid Sorbent,2024-06-01,AlliedOffsets
+Deep Sky Alpha,Deep Sky,Canada,Alberta,53.5461,-113.4938,30000,Under Construction,Multi-technology,2025-03-01,Deep Sky
+Project Octopus,Capture6,South Korea,Asia,35.1796,129.0756,500000,Planned,Electrochemical (Seawater),2027-01-01,Capture6
+Project Monarch,Capture6,USA,California,36.7783,-119.4179,100000,Planned,Electrochemical (Seawater),2026-01-01,Capture6
+Project Hajar,AirCapture/44.01,Oman,Middle East,23.5880,58.3829,50000,Under Construction,Solid Sorbent + Mineralization,2025-06-01,AirCapture
+Origen ND Pilot,Origen,USA,North Dakota,46.8772,-96.7898,1000,Under Construction,Limestone Kiln,2025-01-01,Origen
+Pelican Hub,Origen/Shell/Mitsubishi,USA,Louisiana,29.9511,-90.0715,500000,Planned,Limestone Kiln,2028-01-01,Origen
+Project Jacaranda,Sirona/Cella,Kenya,Africa,-0.4547,36.2473,10000,Under Construction,Solid Sorbent,2025-02-01,Sirona
+Hummingbird,Octavia Carbon,Kenya,Africa,-0.0917,36.0500,1000,Under Construction,Geothermal + Mineralization,2025-06-01,Octavia
+MechanicalTree Tempe,Carbon Collect,USA,Arizona,33.4255,-111.9400,5000,Operational,Passive (MechanicalTree),2024-01-01,Carbon Collect
+Hinwil Facility,Climeworks,Switzerland,Europe,47.2959,8.8547,900,Operational,Solid Sorbent,2017-05-31,Climeworks
