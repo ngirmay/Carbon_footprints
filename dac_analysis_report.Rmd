@@ -1,13 +1,13 @@
 ---
-title: "DAC Analytics Dashboard: Code Review and Future Plans"
-author: "Analytics Team"
+title: "DAC Analytics: Global Direct Air Capture Facilities"
+author: "Nobel Girmay"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output:
   html_document:
     theme: cosmo
     toc: true
     toc_float: true
-    code_folding: show
+    code_folding: hide
     highlight: tango
 ---
 
@@ -20,7 +20,6 @@ knitr::opts_chunk$set(
   fig.height = 6
 )
 
-# Load required packages
 library(tidyverse)
 library(plotly)
 library(knitr)
@@ -29,131 +28,125 @@ library(leaflet)
 library(lubridate)
 ```
 
-## Current Implementation Overview
+## Overview
 
-The current implementation is a Shiny dashboard that monitors Direct Air Capture (DAC) installations worldwide. 
+This report analyzes a curated database of **real-world Direct Air Capture (DAC)
+facilities** worldwide, spanning operational plants, projects under construction,
+and announced installations. Data is sourced from the IEA, the U.S. DOE DAC Hubs
+program, and company disclosures.
 
-### Key Features
-* **Data Management**: Tracks 5 DAC installations with simulated operational data
-* **Visualization Components**:
-  - Interactive global installation map
-  - Real-time CO₂ capture metrics
-  - Performance comparisons across facilities
-  - Environmental impact analysis
-  - Cost efficiency tracking
+The companion interactive dashboard (built in R Shiny with Leaflet and Plotly)
+is in the [project repository](https://github.com/ngirmay/Carbon_footprints).
 
-```{r installations-data}
-# Create DAC installations data
-dac_installations <- data.frame(
-    name = c("Orca", "Mammoth", "Project Bison", "Squamish", "Arizona DAC"),
-    company = c("Climeworks", "Climeworks", "CarbonCapture", "Carbon Engineering", "Carbon Capture Inc"),
-    type = c("Commercial", "Commercial", "Commercial", "Pilot", "Research"),
-    latitude = c(64.0297, 64.0297, 41.8240, 49.7016, 33.4484),
-    longitude = c(-21.9877, -21.9877, -107.9511, -123.1558, -112.0740),
-    capacity = c(4000, 36000, 5000, 1000, 3500),
-    start_date = as.Date(c("2021-09-01", "2024-01-15", "2023-12-01", "2015-06-01", "2022-03-01")),
-    technology = c("Solid Sorbent", "Solid Sorbent", "Solid Sorbent", "Liquid Solvent", "Membrane"),
-    stringsAsFactors = FALSE
-)
-
-# Display current installations
-dac_installations %>%
-  select(name, technology, capacity) %>%
-  arrange(desc(capacity)) %>%
+```{r load-data}
+# Load the real facilities database
+dac <- read_csv("data/dac_facilities.csv", show_col_types = FALSE) %>%
   mutate(
-    capacity = paste0(format(capacity, big.mark=","), " tons/year")
+    start_date = as.Date(start_date),
+    status = factor(status, levels = c("Operational", "Under Construction", "Planned"))
+  )
+
+n_fac      <- nrow(dac)
+n_op       <- sum(dac$status == "Operational", na.rm = TRUE)
+total_cap  <- sum(dac$capacity_tonnes_yr, na.rm = TRUE)
+op_cap     <- sum(dac$capacity_tonnes_yr[dac$status == "Operational"], na.rm = TRUE)
+```
+
+**`r n_fac`** facilities tracked across **`r n_distinct(dac$country)`** countries.
+**`r n_op`** are operational today, with a combined pipeline capacity of
+**`r format(total_cap, big.mark = ",")`** tonnes CO&#8322;/year
+(**`r format(op_cap, big.mark = ",")`** tonnes/year already operational).
+
+## Global Map
+
+```{r map}
+pal <- colorFactor(c("#2f5e28", "#3F7D34", "#8BC34A"), domain = dac$status)
+
+leaflet(dac) %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  addCircleMarkers(
+    ~longitude, ~latitude,
+    radius = ~pmax(4, log10(capacity_tonnes_yr) * 2.5),
+    color = ~pal(status), fillOpacity = 0.75, stroke = FALSE,
+    popup = ~paste0(
+      "<b>", name, "</b><br>", company, "<br>",
+      format(capacity_tonnes_yr, big.mark = ","), " t/yr &middot; ", status, "<br>",
+      technology
+    )
   ) %>%
-  kable(col.names = c("Facility", "Technology Type", "Annual Capacity")) %>%
+  addLegend("bottomright", pal = pal, values = ~status, title = "Status")
+```
+
+## Capacity by Facility
+
+```{r capacity-bar}
+dac %>%
+  arrange(desc(capacity_tonnes_yr)) %>%
+  slice_head(n = 15) %>%
+  plot_ly(
+    x = ~capacity_tonnes_yr,
+    y = ~reorder(name, capacity_tonnes_yr),
+    color = ~status,
+    colors = c("#2f5e28", "#3F7D34", "#8BC34A"),
+    type = "bar", orientation = "h"
+  ) %>%
+  layout(
+    title = "Top 15 DAC Facilities by Announced Capacity",
+    xaxis = list(title = "Capacity (tonnes CO2 / year)"),
+    yaxis = list(title = ""),
+    margin = list(l = 160)
+  )
+```
+
+## Pipeline by Status and Region
+
+```{r status-region}
+dac %>%
+  group_by(region, status) %>%
+  summarise(capacity = sum(capacity_tonnes_yr), .groups = "drop") %>%
+  plot_ly(
+    x = ~region, y = ~capacity, color = ~status,
+    colors = c("#2f5e28", "#3F7D34", "#8BC34A"), type = "bar"
+  ) %>%
+  layout(
+    barmode = "stack",
+    title = "Announced Capacity by Region and Status",
+    xaxis = list(title = ""),
+    yaxis = list(title = "Capacity (tonnes CO2 / year)")
+  )
+```
+
+## Technology Mix
+
+```{r tech-table}
+dac %>%
+  count(technology, wt = capacity_tonnes_yr, name = "capacity") %>%
+  arrange(desc(capacity)) %>%
+  mutate(capacity = paste0(format(capacity, big.mark = ","), " t/yr")) %>%
+  kable(col.names = c("Technology", "Total Announced Capacity")) %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
-### Current Limitations
-1. Data Generation: Relies on simulated data
-2. Static Installation Data: Fixed set of 5 DAC installations
-3. Limited Error Handling
-4. Basic Authentication
-5. Limited Data Export
+## Deployment Timeline
 
-```{r operational-data}
-# Generate operational data function
-generate_operational_data <- function(installations, days = 365) {
-    dates <- seq(Sys.Date() - days, Sys.Date(), by = "day")
-    operational_data <- expand.grid(
-        installation_name = installations$name,
-        date = dates,
-        stringsAsFactors = FALSE
-    ) %>%
-    left_join(installations[, c("name", "capacity", "start_date")], 
-              by = c("installation_name" = "name")) %>%
-    filter(date >= start_date) %>%
-    group_by(installation_name) %>%
-    mutate(
-        efficiency_factor = 0.8 + 0.15 * sin(2 * pi * as.numeric(format(date, "%j")) / 365),
-        daily_capacity = capacity / 365,
-        co2_captured = daily_capacity * efficiency_factor * (1 + rnorm(n(), 0, 0.05)),
-        energy_used = co2_captured * (2.0 + rnorm(n(), 0, 0.2)),
-        operating_cost = co2_captured * (400 + rnorm(n(), 0, 50)),
-        temperature = 15 + 10 * sin(2 * pi * as.numeric(format(date, "%j")) / 365) + rnorm(n(), 0, 2),
-        humidity = pmin(pmax(60 + rnorm(n(), 0, 10), 0), 100)
-    ) %>%
-    ungroup() %>%
-    select(-efficiency_factor, -daily_capacity)
-    
-    return(operational_data)
-}
-
-# Generate the data
-operational_data <- generate_operational_data(dac_installations)
-```
-
-## Performance Analysis
-
-```{r performance-plot}
-# Temperature vs Efficiency Plot
-plot_ly(operational_data, 
-        x = ~temperature, 
-        y = ~co2_captured/energy_used * 100,
-        type = "scatter",
-        mode = "markers",
-        marker = list(
-          color = "#4CAF50",
-          size = 8,
-          opacity = 0.6
-        )) %>%
-  add_lines(x = ~temperature, 
-           y = ~fitted(loess(co2_captured/energy_used * 100 ~ temperature)),
-           line = list(color = "#1B5E20")) %>%
+```{r timeline}
+dac %>%
+  filter(!is.na(start_date)) %>%
+  arrange(start_date) %>%
+  mutate(cumulative = cumsum(capacity_tonnes_yr)) %>%
+  plot_ly(x = ~start_date, y = ~cumulative, type = "scatter", mode = "lines+markers",
+          line = list(color = "#3F7D34"), marker = list(color = "#2f5e28")) %>%
   layout(
-    title = "Temperature Effects on System Efficiency",
-    xaxis = list(title = "Temperature (°C)"),
-    yaxis = list(title = "Efficiency (%)")
+    title = "Cumulative Announced Capacity Over Time",
+    xaxis = list(title = ""),
+    yaxis = list(title = "Cumulative capacity (tonnes CO2 / year)")
   )
 ```
 
-## Future Projections
+## Notes
 
-```{r projections}
-future_projections <- data.frame(
-  Year = 2024:2030,
-  Expected_Capacity = c(5000, 15000, 45000, 100000, 200000, 350000, 500000),
-  Optimistic_Capacity = c(5000, 20000, 60000, 150000, 300000, 500000, 750000),
-  Conservative_Capacity = c(5000, 12000, 30000, 70000, 150000, 250000, 350000)
-)
-
-plot_ly(future_projections, x = ~Year) %>%
-  add_lines(y = ~Expected_Capacity, name = "Expected", line = list(color = "#4CAF50")) %>%
-  add_lines(y = ~Optimistic_Capacity, name = "Optimistic", line = list(color = "#8BC34A")) %>%
-  add_lines(y = ~Conservative_Capacity, name = "Conservative", line = list(color = "#1B5E20")) %>%
-  layout(
-    title = "Projected Annual Capture Capacity",
-    yaxis = list(title = "Annual Capacity (tons)")
-  )
-```
-
-## Conclusion
-
-The current implementation provides a solid foundation for DAC installation monitoring. Key areas for improvement include:
-- Data management and reliability
-- User experience and customization
-- Advanced analytics and predictions
-- System scalability and security
+- Capacities are **announced/nameplate** figures; operational output varies with
+  load factor, energy source, and ambient conditions.
+- "Planned" facilities are subject to final investment decisions and may shift.
+- Data compiled from IEA, DOE DAC Hubs, and 1PointFive / Climeworks / Heirloom
+  disclosures. See `data/dac_facilities.csv` for the full source column.
